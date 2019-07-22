@@ -1,17 +1,18 @@
 import React, {Component} from 'react';
 import './App.css';
 import 'semantic-ui-css/semantic.min.css'
-import { Container , Segment, Form, Transition, Button, Header, Grid} from 'semantic-ui-react'
+import { Container , Segment, Form, Transition, Button, Header, Table} from 'semantic-ui-react'
 import { TermBox } from './newmap_components/TermBox';
-import { Redirect } from 'react-router'
-
+import {EditorInstance} from './utils/EditorInstance'
+import InlineEdit from './utils/react-edit-inline/index.jsx';
+import { computeUnits } from './utils/utilityFunctions'
 export class NewMap extends Component {
   constructor(props, context){
     super(props, context)
     this.state = {
       visible: false,
       terms: [],
-      title: "",
+      title: "New Map",
       description: "",
       term_code: "",
       lead: "",
@@ -21,6 +22,7 @@ export class NewMap extends Component {
       skills: "",
       career_community: "",
       notes: "",
+      tot_units: 0
     }
   }
   /*
@@ -36,13 +38,57 @@ export class NewMap extends Component {
   /*
     HANDLERS FOR CLASSBOX AND TERMBOX
   */
+
+  handleDescription = (data) => {
+    this.setState({
+      description: data
+    })
+  }
+
+  handleCurrentProgram = (data) => {
+    this.setState({
+      current_program: data
+    })
+  }
+
+  handleOutcomes = (data) => {
+    this.setState({
+      outcomes: data
+    })
+  }
+
+  handleJobs = (data) => {
+    this.setState({
+      jobs: data
+    })
+  }
+
+  handleSkills = (data) => {
+    this.setState({
+      skills: data
+    })
+  }
+
+  handleNotes = (data) => {
+    this.setState({
+      notes: data
+    })
+  }
+  
   //  Adds a class to the array of terms. 
   handleClass = (term_id, new_class) => {
     const { terms } = this.state;
 
-    terms[term_id].classes.push({title: new_class.course, class_id: new_class._id})
+    terms[term_id].classes.push({
+      title: new_class.course, 
+      description: new_class.title, 
+      class_id: new_class._id, 
+      units: new_class.max_units,
+      notes: ""
+    })
     this.setState({
-      terms: terms
+      terms: terms,
+      tot_units: computeUnits(terms)
     })
   }
   //  Removes a class from a specific term. 
@@ -71,7 +117,6 @@ export class NewMap extends Component {
     this.setState({
       terms: terms
     })
-    console.log(this.state.terms)
   }
    //  Removes a term. 
    handleRemoveTerm = (term_id) => {
@@ -86,6 +131,9 @@ export class NewMap extends Component {
   /*
     UTILITY FUNCTIONS
   */
+  titleChanged = ({title}) => {
+    this.setState({title: title})
+  }
   // Turns visibility on for initial animation
   handleVisibility = () => {this.setState({visible: true})}
   //  Handle Form Field Change
@@ -94,7 +142,7 @@ export class NewMap extends Component {
   handleSubmit = async () => {
     const {
       terms, 
-      title, 
+      title,
       description, 
       skills, 
       outcomes, 
@@ -103,7 +151,7 @@ export class NewMap extends Component {
       term_code, 
       career_community, 
       current_program, 
-      notes
+      notes,
     } = this.state;
     
     const body = {
@@ -130,7 +178,15 @@ export class NewMap extends Component {
     })
 
     window.location.replace("/");
-    
+  }
+
+  handleEditNote = (term_count, class_count, new_notes) => {
+    const { terms } = this.state;
+    terms[term_count].classes[class_count].notes = new_notes
+    console.log(terms)
+    this.setState({
+      terms: terms
+    })
   }
   /*
     END OF UTILITY FUNCTIONS
@@ -140,80 +196,70 @@ export class NewMap extends Component {
     const {
       terms, 
       title, 
-      description, 
-      skills, 
-      outcomes, 
-      jobs, 
       lead, 
       term_code, 
       career_community, 
-      current_program, 
-      notes, 
+      current_program,  
       class_options,
-      redirect
+      tot_units
     } = this.state;
   
     return(
       <div>
        <Transition.Group animation='slide left' duration={200}>
         {this.state.visible && 
-          <Container style={{paddingTop: 80, paddingBottom: 50}}>
+          <Container fluid style={{paddingTop: 80, paddingBottom: 50, paddingLeft: 8, paddingRight: 8}}>
+            <Form size="massive"> 
             <Segment size="massive">
-              <Header>Create New Map</Header>
+              <InlineEdit
+                style={{fontSize: 30}}
+                text={title}
+                paramName="title"
+                change={this.titleChanged}
+              />
             </Segment>
-            
-              <Form size="big">
+            </Form>
+            <Form style={{paddingTop: 15}}size="big">
+              <Segment size="big">
+                        <Form.Field>
+                          <Header>Current Program</Header>
+                          <Form.Input 
+                            name='current_program'
+                            value={current_program}
+                            onChange={this.handleChange}>
+                          </Form.Input>
+                        </Form.Field>
+                    </Segment>
                 <Segment size="big">
                   <Form.Field>
-                    <label>Title</label>
-                    <Form.Input 
-                      name='title'
-                      value={title}
-                      onChange={this.handleChange}>
-                    </Form.Input>
+                    <Header>Description</Header>
+                    <EditorInstance controller={this.handleDescription} />
                   </Form.Field>
                 </Segment>
 
                 <Segment size="big">
                   <Form.Field>
-                    <label>Description</label>
-                    <Form.Input 
-                      name='description'
-                      value={description}
-                      onChange={this.handleChange}>
-                    </Form.Input>
+                    <Header>Outcomes</Header>
+                    <EditorInstance controller={this.handleOutcomes}/>
                   </Form.Field>
                 </Segment>
 
-                <Grid style={{paddingBottom: 10}} columns={2}>
-                  <Grid.Column>
+                <Segment size="big">
+                  <Form.Field>
+                    <Header>Jobs</Header>
+                    <EditorInstance controller={this.handleJobs}/>
+                  </Form.Field>
+                </Segment>
+
+                <Segment size="big">
+                  <Form.Field>
+                    <Header>Skills</Header>
+                    <EditorInstance controller={this.handleSkills}/>
+                  </Form.Field>
+                </Segment>
                     <Segment size="big">
                       <Form.Field>
-                        <label>Outcomes</label>
-                        <Form.Input 
-                          name='outcomes'
-                          value={outcomes}
-                          onChange={this.handleChange}>
-                        </Form.Input>
-                      </Form.Field>
-                      <Form.Field>
-                        <label>Jobs</label>
-                        <Form.Input 
-                          name='jobs'
-                          value={jobs}
-                          onChange={this.handleChange}>
-                        </Form.Input>
-                      </Form.Field>
-                      <Form.Field>
-                        <label>Skills</label>
-                        <Form.Input 
-                          name='skills'
-                          value={skills}
-                          onChange={this.handleChange}>
-                        </Form.Input>
-                      </Form.Field>
-                      <Form.Field>
-                        <label>Career Community</label>
+                        <Header>Career Community</Header>
                         <Form.Input 
                           name='career_community'
                           value={career_community}
@@ -221,51 +267,33 @@ export class NewMap extends Component {
                         </Form.Input>
                       </Form.Field>
                     </Segment>
-                  </Grid.Column>
-                    <Grid.Column>
-                      <Segment size="big">
+                    <Segment size="big">
                         <Form.Field>
-                          <label>Current Program</label>
-                          <Form.Input 
-                            name='current_program'
-                            value={current_program}
-                            onChange={this.handleChange}>
-                          </Form.Input>
-                        </Form.Field>
-                        <Form.Field>
-                          <label>Lead</label>
+                          <Header>Lead</Header>
                           <Form.Input 
                             name='lead'
                             value={lead}
                             onChange={this.handleChange}>
                           </Form.Input>
                         </Form.Field>
+                    </Segment>
+                    <Segment size="big">
                         <Form.Field>
-                          <label>Term Code</label>
+                          <Header>Term Code</Header>
                           <Form.Input 
                             name='term_code'
                             value={term_code}
                             onChange={this.handleChange}>
                           </Form.Input>
                         </Form.Field>
-                        <Form.Field>
-                          <label>Notes</label>
-                          <Form.Input 
-                            name='notes'
-                            value={notes}
-                            onChange={this.handleChange}>
-                          </Form.Input>
-                        </Form.Field>
-                      </Segment>
-                    </Grid.Column>   
-                </Grid>
+                    </Segment>
               
                 <Segment size="big">
                     <Header>Planner</Header>
                     <div style={{paddingBottom: 10}}>
                       <Button icon="plus" onClick={this.handleTerm} color="green" fluid size="big">Add Term</Button>
                     </div>
-                    <Grid style={{padding: 10}} columns={terms.length}>
+                    <Table>
                       {
                         terms.length !== 0 && terms.map( ( current_term, term_count ) => <div style={{padding: 10}}> 
                           <TermBox 
@@ -277,11 +305,23 @@ export class NewMap extends Component {
                             handleRemoveClass={this.handleRemoveClass}
                             handleRemoveTerm={this.handleRemoveTerm}
                             handleUpdateTerm={this.handleUpdateTerm}
+                            handleEditNote={this.handleEditNote}
                           />
                         </div>)
                       }
-                    </Grid>
+                      </Table>
+                      <div style={{paddingBottom: 30}}>
+                        <Header style={{fontSize: 25}} floated="right">Total Program Units: {tot_units}</Header>
+                      </div>
                 </Segment>
+                
+                <Segment size="big">
+                  <Form.Field>
+                    <Header>Author Notes</Header>
+                    <EditorInstance controller={this.handleNotes}/>
+                  </Form.Field>
+                </Segment>
+
                 <Button onClick={this.handleSubmit } size="big" color="yellow" fluid type='submit'>Create Map</Button>
               </Form>
           </Container>

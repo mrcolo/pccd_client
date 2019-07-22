@@ -5,7 +5,7 @@ import './App.css';
 import { Switch, Route } from 'react-router'
 import { BrowserRouter } from 'react-router-dom'
 import Main from './Main.js'
-import { Menu, Container, Header } from 'semantic-ui-react';
+import { Menu, Container, Header, Button } from 'semantic-ui-react';
 import { CSSTransition, TransitionGroup } from 'react-transition-group'
 import { NewMap } from './NewMap';
 import Link from 'react-router-dom/Link';
@@ -24,7 +24,7 @@ class App extends Component {
     return(
       <BrowserRouter forceRefresh={!supportsHistory}>
         <div className="back" >
-        <Menu color="red" fixed='top' inverted>
+        <Menu color="red" inverted fixed='top'>
           <Container>
           <Link 
           to={{
@@ -35,6 +35,15 @@ class App extends Component {
               <Header style={{fontSize: 30}} inverted>PCCd</Header>
             </Menu.Item>
             </Link>
+            <Menu.Item as='a' header>
+            <Link 
+              to={{
+              pathname: '/newmap',
+              state: { prev: true },
+            }}>
+              <Button size="medium"  inverted fluid>New Map</Button>
+            </Link>
+            </Menu.Item>
           </Container>
         </Menu>
         <Switch>
