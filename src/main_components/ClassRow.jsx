@@ -1,5 +1,6 @@
 import React from 'react'
 import { Table } from 'semantic-ui-react'
+import {CRUD_CLASS} from '../utils/apiEndpoints'
 
 export class ClassRow extends React.Component {
     constructor(props) {
@@ -14,7 +15,7 @@ export class ClassRow extends React.Component {
 
     handleBegin = async () => {
         const { id, incrementUnits } = this.props
-        const rawResponse = await fetch('http://localhost:3000/v1/class/' + id, {
+        const rawResponse = await fetch(CRUD_CLASS + id, {
             method: 'GET',
             headers: {
               'Accept': 'application/json',

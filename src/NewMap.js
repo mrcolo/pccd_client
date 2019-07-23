@@ -6,6 +6,8 @@ import { TermBox } from './newmap_components/TermBox';
 import {EditorInstance} from './utils/EditorInstance'
 import InlineEdit from './utils/react-edit-inline/index.jsx';
 import { computeUnits } from './utils/utilityFunctions'
+import { CRUD_DOCUMENTS} from './utils/apiEndpoints'
+
 export class NewMap extends Component {
   constructor(props, context){
     super(props, context)
@@ -168,7 +170,7 @@ export class NewMap extends Component {
       notes: notes,
     }
     
-    await fetch('http://localhost:3000/v1/document/', {
+    await fetch(CRUD_DOCUMENTS, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',

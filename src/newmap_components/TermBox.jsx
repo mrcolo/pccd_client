@@ -2,6 +2,7 @@ import React from 'react'
 import { Table, Modal, Button, Input, List, Icon, Divider, Header } from 'semantic-ui-react'
 import { ClassBox } from './ClassBox'
 import InlineEdit from '../utils/react-edit-inline/index.jsx';
+import {AUTOCOMPLETE_CLASS} from '../utils/apiEndpoints'
 
 export class TermBox extends React.Component {
 
@@ -16,7 +17,7 @@ export class TermBox extends React.Component {
   //  Autocompletes a class based on form input. 
   fetchClasses = async (e, {value}) => {
     if(value !== ""){
-      const rawResponse = await fetch("http://localhost:3000/v1/class/autocomplete?a=" + value.toUpperCase())
+      const rawResponse = await fetch(AUTOCOMPLETE_CLASS + "?a=" + value.toUpperCase())
       const json = await rawResponse.json()
       this.setState({
         class_options: json

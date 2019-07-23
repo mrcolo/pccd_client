@@ -5,6 +5,8 @@ import { Container, Header, Loader , Transition, Modal, Card, Divider, Label, In
 import { TermTable } from './main_components/TermTable'
 import renderHTML from 'react-render-html';
 
+import {GET_DOCUMENTS, CRUD_DOCUMENTS, AUTOCOMPLETE_DOCUMENTS} from './utils/apiEndpoints'
+
 class Main extends Component {
   constructor(props){
     super(props)
@@ -71,7 +73,7 @@ class Main extends Component {
       documentsLoading: true
     })
 
-    const rawResponse = await fetch("http://localhost:3000/v1/document/?page=" + page )
+    const rawResponse = await fetch(GET_DOCUMENTS + page )
     const json = await rawResponse.json()
     if(json.length !== 0){
       this.setState({
@@ -83,7 +85,7 @@ class Main extends Component {
   }
 
   handleRemove = async (id) => {
-    await fetch('http://localhost:3000/v1/document/' + id, {
+    await fetch(CRUD_DOCUMENTS + id, {
       method: 'DELETE',
       headers: {
         'Accept': 'application/json',
@@ -98,7 +100,7 @@ class Main extends Component {
   handleChangeSearchQuery = async (e, {value}) => {
     if(value.length !== 0){
       const {searchCategory} = this.state;
-      const url = 'http://localhost:3000/v1/document/autocomplete?a=' + value + '&c=' + searchCategory
+      const url = AUTOCOMPLETE_DOCUMENTS + '?a=' + value + '&c=' + searchCategory
       const rawResponse = await fetch(url)
       console.log(url)
       const json = await rawResponse.json();
@@ -123,7 +125,7 @@ class Main extends Component {
     this.setState({
       documentsLoading: true
     })
-    const rawResponse = await fetch("http://localhost:3000/v1/document/?page=" + 1 )
+    const rawResponse = await fetch(CRUD_DOCUMENTS + 1 )
     const json = await rawResponse.json()
     if(json.length !== 0){
       this.setState({
