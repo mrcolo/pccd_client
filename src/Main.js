@@ -4,8 +4,15 @@ import 'semantic-ui-css/semantic.min.css'
 import { Container, Header, Loader , Transition, Modal, Card, Divider, Label, Input, Button} from 'semantic-ui-react'
 import { TermTable } from './main_components/TermTable'
 import renderHTML from 'react-render-html';
+import Link from 'react-router-dom/Link';
 
 import {GET_DOCUMENTS, CRUD_DOCUMENTS, AUTOCOMPLETE_DOCUMENTS} from './utils/apiEndpoints'
+
+const colorStates = {
+  approved:'blue',
+  draft: 'yellow',
+  posted: 'green',
+}
 
 class Main extends Component {
   constructor(props){
@@ -169,8 +176,8 @@ class Main extends Component {
                   <Card raised={false} fluid>
                     <Card.Content>
                     <Card.Header style={{fontSize: 25, paddingBottom: 20}}>{document.title}</Card.Header>
-                    <Label size="big" as='a' color='green'>
-                      Approved
+                    <Label size="big" as='a' color={colorStates[document.state]}>
+                      {document.state}
                     </Label>
                     </Card.Content>
                   </Card>
@@ -203,10 +210,18 @@ class Main extends Component {
                     <p><Header>Author Notes</Header> {document.notes}</p>
                   </Modal.Content>
                   <Modal.Content>
+                    <Divider/>
+                    <Link 
+                      to={{
+                        pathname: '/editmap/' + document.id,
+                        state: { prev: true },
+                      }} >
+                    <Button color="yellow">Edit Map
+                    </Button>
+                    </Link>
+                    <Button color="blue" onClick={this.printDocument}>Export PDF</Button>
                     <Button onClick={() => {this.handleRemove(document.id)}} color="red">Remove Map</Button>
-                    <div className="mb5">
-                        <Button color="yellow" onClick={this.printDocument}>Export PDF</Button>
-                    </div>
+                  
                   </Modal.Content>
                 </Modal>
               )}
