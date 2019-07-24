@@ -1,13 +1,20 @@
 'use strict';
 import React from 'react'
-import {Editor, EditorState, RichUtils} from 'draft-js'
+import {Editor, EditorState,ContentState, RichUtils} from 'draft-js'
 import {stateToHTML} from 'draft-js-export-html';
-
+import {stateFromHTML} from 'draft-js-import-html'; 
 export class EditorInstance extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {editorState: EditorState.createEmpty()};
-
+    if(this.props.withText){
+      let contentState = stateFromHTML(this.props.text);
+      this.state = { editorState: EditorState.createWithContent(contentState)}
+    }
+    else{
+      this.state = {editorState: EditorState.createEmpty()};
+    }
+    
+    
     this.focus = () => this.refs.editor.focus();
     this.onChange = (editorState) => {
       const { controller } = this.props;

@@ -1,8 +1,8 @@
 import React from 'react'
-import { Table, Modal, Button, Input, List, Icon, Divider, Header } from 'semantic-ui-react'
+import { Table, Modal, Button, Input, List, Icon, Divider, Header, Grid } from 'semantic-ui-react'
 import { ClassBox } from './ClassBox'
 import InlineEdit from '../utils/react-edit-inline/index.jsx';
-import {AUTOCOMPLETE_CLASS} from '../utils/apiEndpoints'
+import {AUTOCOMPLETE_CLASS, CRUD_CLASS} from '../utils/apiEndpoints'
 
 export class TermBox extends React.Component {
 
@@ -10,7 +10,11 @@ export class TermBox extends React.Component {
     super(props)
     this.state = { 
       class_options: [],
-      modal_on: false
+      normal_class_modal_on: false,
+      custom_class_modal_on: false,
+      custom_title: "",
+      custom_course: "",
+      custom_units: 0,
     }
   }
   
@@ -37,14 +41,41 @@ export class TermBox extends React.Component {
   }
 
   addClass = (this_class) => {
+    console.log(this_class)
     const {handleClass, term_count} = this.props 
     handleClass(term_count, this_class)
-    this.setState({modal_on: false, class_options: []}) 
+    this.setState({normal_class_modal_on: false, class_options: []}) 
+  }
+
+  handleChange = (e, { name, value }) => this.setState({ [name]: value })
+
+  handleAddCustomClass = async () => {
+    const {custom_title, custom_units, custom_course} = this.state;
+    const body = {
+      title: custom_title,
+      course: custom_course,
+      max_units: custom_units, 
+    }
+    const rawResponse = await fetch(CRUD_CLASS , {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    })
+    console.log(await rawResponse.json())
+
+    this.setState({
+      custom_class_modal_on: false,
+      custom_title: "",
+      custom_units: 0
+    })
   }
 
   render () {
     const {term_count, current_term, handleRemoveClass, handleRemoveTerm, handleEditNote} = this.props
-    const {class_options, modal_on} = this.state
+    const {class_options, normal_class_modal_on, custom_class_modal_on, custom_title, custom_units, custom_course} = this.state
     return (
       <div>
       <Table  celled >
@@ -58,9 +89,12 @@ export class TermBox extends React.Component {
                 />
               <Divider/>
               <Button.Group style={{paddingLeft: 50, paddingRight: 50}} fluid>
-                <Button onClick={ () => {this.setState({modal_on: true})}} color="green">
+                <Button onClick={ () => {this.setState({normal_class_modal_on: true})}} color="green">
                     Add Class
-                  </Button>    
+                </Button>    
+                <Button onClick={ () => {this.setState({custom_class_modal_on: true})}} color="blue">
+                    Add Custom Class
+                </Button> 
                 <Button onClick={() => {handleRemoveTerm(term_count)}} color="red" floated="right">
                   Delete Term
                 </Button>
@@ -93,29 +127,63 @@ export class TermBox extends React.Component {
       </Table>
       
       <Modal 
-      open={modal_on} 
+        open={normal_class_modal_on} 
+        centered={false}
+      >
+        <Modal.Header>Select a Class</Modal.Header>
+        <Input
+          style={{padding: 20}}
+          fluid
+          onChange={this.fetchClasses}
+        />
+        <Divider/>
+        <Modal.Content scrolling>
+          {
+            class_options.length !== 0 ? <List selection verticalAlign='middle'>
+              {
+                class_options.map(this_class => <List.Item onClick={() => {this.addClass(this_class)}}> 
+                  <List.Content>
+                    <List.Header>{this_class.course}</List.Header>
+                  </List.Content>
+                </List.Item>)
+              }
+            </List> : <Header>Enter a class name to start. </Header>
+          }
+        </Modal.Content>
+      </Modal> 
+
+
+      <Modal 
+      open={custom_class_modal_on} 
       centered={false}
     >
-      <Modal.Header>Select a Class</Modal.Header>
+      <Modal.Header>Add a Custom Class</Modal.Header>
+      <Header>Title</Header>
       <Input
         style={{padding: 20}}
         fluid
-        onChange={this.fetchClasses}
+        name='custom_title'
+        value={custom_title}
+        onChange={this.handleChange}
+      />
+      <Header>Course</Header>
+      <Input
+        style={{padding: 20}}
+        fluid
+        name='custom_course'
+        value={custom_course}
+        onChange={this.handleChange}   
+      />
+      <Header>Units</Header>
+      <Input
+        style={{padding: 20}}
+        fluid
+        name='custom_units'
+        value={custom_units}
+        onChange={this.handleChange}   
       />
       <Divider/>
-      <Modal.Content scrolling>
-        {
-          class_options.length !== 0 ? <List selection verticalAlign='middle'>
-            {
-              class_options.map(this_class => <List.Item onClick={() => {this.addClass(this_class)}}> 
-                <List.Content>
-                  <List.Header>{this_class.course}</List.Header>
-                </List.Content>
-              </List.Item>)
-            }
-          </List> : <Header>Enter a class name to start. </Header>
-        }
-      </Modal.Content>
+      <Button onClick={this.handleAddCustomClass} size="big" fluid color="green">Confirm</Button>
     </Modal> 
     </div>
     )

@@ -12,6 +12,21 @@ import Link from 'react-router-dom/Link';
 
 const supportsHistory = 'pushState' in window.history;
 
+const renderMergedProps = (component, ...rest) => {
+  const finalProps = Object.assign({}, ...rest);
+  return (
+    React.createElement(component, finalProps)
+  );
+}
+
+const PropsRoute = ({ component, ...rest }) => {
+  return (
+    <Route {...rest} render={routeProps => {
+      return renderMergedProps(component, routeProps, rest);
+    }}/>
+  );
+}
+
 class App extends Component {
 
   constructor(props){
@@ -73,6 +88,8 @@ class App extends Component {
                         path="/newmap"
                         component={NewMap}
                       />
+                      <PropsRoute path='/editmap/:id' component={NewMap} isEditing={true} />
+
                     </Switch>
                   )}
                 />

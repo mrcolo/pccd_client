@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import './App.css';
 import 'semantic-ui-css/semantic.min.css'
-import { Container , Segment, Form, Transition, Button, Header, Table} from 'semantic-ui-react'
+import { Container , Segment, Form, Transition, Button, Header, Table, Label} from 'semantic-ui-react'
 import { TermBox } from './newmap_components/TermBox';
 import {EditorInstance} from './utils/EditorInstance'
 import InlineEdit from './utils/react-edit-inline/index.jsx';
@@ -24,19 +24,50 @@ export class NewMap extends Component {
       skills: "",
       career_community: "",
       notes: "",
-      tot_units: 0
+      tot_units: 0,
+      map_state: "draft",
+      isDoneUploading: this.props.isEditing ? false : true
+    }
+     if(this.props.isEditing){
+      this.handleEditing() 
+    }
+    else{
+      this.setState({
+        isDoneUploading: true
+      })
     }
   }
   /*
     REACT METHODS
   */
   componentDidMount() {
+    const { isEditing } = this.props;
     setTimeout(() => {this.handleVisibility()}, 100)
   }
   /*
     END OF REACT METHODS
   */
-
+  handleEditing = async () => {
+    const { match: { params } } = this.props;
+      const rawResponse = await fetch(CRUD_DOCUMENTS + params.id, {
+        method: 'GET',
+      })
+      const json = await rawResponse.json()
+      console.log(json)
+      this.setState({
+        career_community: json.career_community,
+        title: json.title,
+        jobs: json.jobs,
+        current_program: json.current_program,
+        terms: json.terms,
+        description: json.description,
+        outcomes: json.outcomes, 
+        skills: json.skills,
+        lead: json.lead,
+        
+        isDoneUploading: true
+      })
+  }
   /*
     HANDLERS FOR CLASSBOX AND TERMBOX
   */
@@ -140,8 +171,28 @@ export class NewMap extends Component {
   handleVisibility = () => {this.setState({visible: true})}
   //  Handle Form Field Change
   handleChange = (e, { name, value }) => this.setState({ [name]: value })
+  
+  handleApproved = () => {
+    this.setState({
+      map_state: "approved"
+    })
+  }
+
+  handlePosted = () => {
+    this.setState({
+      map_state: "posted"
+    })
+  }
+
+  handleDraft = () => {
+    this.setState({
+      map_state: "draft"
+    })
+  }
+
   //  Submit a Map to the server. 
   handleSubmit = async () => {
+    const {isEditing} = this.props;
     const {
       terms, 
       title,
@@ -151,6 +202,7 @@ export class NewMap extends Component {
       jobs, 
       lead, 
       term_code, 
+      map_state,
       career_community, 
       current_program, 
       notes,
@@ -162,6 +214,7 @@ export class NewMap extends Component {
       skills: skills,
       outcomes: outcomes,
       jobs: jobs,
+      state: map_state,
       lead: lead,
       term_code: term_code,
       career_community: career_community, 
@@ -169,15 +222,29 @@ export class NewMap extends Component {
       terms: terms,
       notes: notes,
     }
+    if(isEditing){
+      const { match: { params } } = this.props;
+      await fetch(CRUD_DOCUMENTS +"/" +  params.id, {
+        method: 'PUT',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      })
+    }
+    else{
+      const rawResponse = await fetch(CRUD_DOCUMENTS , {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      })
+      console.log(rawResponse)
+    }
     
-    await fetch(CRUD_DOCUMENTS, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    })
 
     window.location.replace("/");
   }
@@ -200,17 +267,27 @@ export class NewMap extends Component {
       title, 
       lead, 
       term_code, 
+      description,
       career_community, 
-      current_program,  
+      current_program,
+      outcomes,  
       class_options,
-      tot_units
+      tot_units,
+      map_state,
+      isDoneUploading,
+      jobs,
+      skills
     } = this.state;
-  
+    const {
+      isEditing
+    } = this.props;
     return(
+
       <div>
-       <Transition.Group animation='slide left' duration={200}>
+       {isDoneUploading && <Transition.Group animation='slide left' duration={200}>
         {this.state.visible && 
           <Container fluid style={{paddingTop: 80, paddingBottom: 50, paddingLeft: 8, paddingRight: 8}}>
+            {isEditing && <div style={{paddingBottom: 20}}><Label fluid color="yellow" size="massive">Edit Mode</Label></div>}
             <Form size="massive"> 
             <Segment size="massive">
               <InlineEdit
@@ -232,31 +309,41 @@ export class NewMap extends Component {
                           </Form.Input>
                         </Form.Field>
                     </Segment>
+              <Segment size="big">
+                  <Form.Field>
+                    <Header>State</Header>
+                    <Button.Group fluid size="big">
+                      <Button onClick={this.handleDraft} color={map_state == 'draft' ? "yellow" : "white"}> Draft </Button>
+                      <Button onClick={this.handleApproved} color={map_state == 'approved' ? "yellow" : "white"} > Approved </Button>
+                      <Button onClick={this.handlePosted} color={map_state == 'posted' ? "yellow" : "white"}> Posted</Button>
+                      </Button.Group>
+                  </Form.Field>
+              </Segment>
                 <Segment size="big">
                   <Form.Field>
                     <Header>Description</Header>
-                    <EditorInstance controller={this.handleDescription} />
+                    <EditorInstance withText={true} text={description} controller={this.handleDescription} />
                   </Form.Field>
                 </Segment>
 
                 <Segment size="big">
                   <Form.Field>
                     <Header>Outcomes</Header>
-                    <EditorInstance controller={this.handleOutcomes}/>
+                    <EditorInstance withText={true} text={outcomes} controller={this.handleOutcomes}/>
                   </Form.Field>
                 </Segment>
-
+                
                 <Segment size="big">
                   <Form.Field>
                     <Header>Jobs</Header>
-                    <EditorInstance controller={this.handleJobs}/>
+                    <EditorInstance withText={true} text={jobs} controller={this.handleJobs}/>
                   </Form.Field>
                 </Segment>
 
                 <Segment size="big">
                   <Form.Field>
                     <Header>Skills</Header>
-                    <EditorInstance controller={this.handleSkills}/>
+                    <EditorInstance withText={true} text={skills} controller={this.handleSkills}/>
                   </Form.Field>
                 </Segment>
                     <Segment size="big">
@@ -324,11 +411,11 @@ export class NewMap extends Component {
                   </Form.Field>
                 </Segment>
 
-                <Button onClick={this.handleSubmit } size="big" color="yellow" fluid type='submit'>Create Map</Button>
+                <Button onClick={this.handleSubmit } size="big" color={isEditing ? "blue" : "yellow"} fluid type='submit'>{isEditing ? "Edit Map" : "Create Map" }</Button>
               </Form>
           </Container>
        }
-        </Transition.Group>
+        </Transition.Group>}
         </div>
     )
   }
