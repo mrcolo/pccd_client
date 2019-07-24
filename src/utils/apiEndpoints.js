@@ -1,5 +1,5 @@
 
-const ENTRYPOINT = 'http://bb3d721c.ngrok.io'
+const ENTRYPOINT = 'https://f8760deb.ngrok.io'
 
 export const GET_DOCUMENTS = ENTRYPOINT + '/v1/document/?page='
 
