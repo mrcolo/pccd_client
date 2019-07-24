@@ -1,4 +1,4 @@
-const dev = true;
+const dev = false;
 
 const ENTRYPOINT_PRODUCTION = 'https://f8760deb.ngrok.io'
 const ENTRYPOINT_DEVELOPMENT = 'http://localhost:3000'
