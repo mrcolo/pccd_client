@@ -351,7 +351,6 @@ export class NewMap extends Component {
                         <Header>Career Community</Header>
                         <Form.Input 
                           name='career_community'
-                          value={career_community}
                           onChange={this.handleChange}>
                         </Form.Input>
                       </Form.Field>

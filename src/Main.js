@@ -26,6 +26,7 @@ class Main extends Component {
       searchCategory: -1,
       isSearching: false
     }
+
     this.handleDocuments(this.state.documents, this.state.page)
   }
  
@@ -42,11 +43,11 @@ class Main extends Component {
   }
 
   onScroll = () => {
-    const {documents} = this.state;
+    const {documents, isSearching} = this.state;
 
     if (
       ( - window.innerHeight + window.scrollY) >= (document.body.offsetHeight) &&
-      documents.length
+      documents.length && !isSearching
     ) {
       this.handleDocuments()
     }
@@ -82,6 +83,7 @@ class Main extends Component {
 
     const rawResponse = await fetch(GET_DOCUMENTS + page )
     const json = await rawResponse.json()
+    console.log(json)
     if(json.length !== 0){
       this.setState({
         documents: documents.concat(json),
@@ -132,7 +134,7 @@ class Main extends Component {
     this.setState({
       documentsLoading: true
     })
-    const rawResponse = await fetch(CRUD_DOCUMENTS + 1 )
+    const rawResponse = await fetch(CRUD_DOCUMENTS)
     const json = await rawResponse.json()
     if(json.length !== 0){
       this.setState({
@@ -153,13 +155,13 @@ class Main extends Component {
           <Header style={{fontSize: 20}}>Maps</Header>
           <Divider/>
           <div style={{paddingBottom: 15 }}>
-              <Button.Group size="big" color="yellow" fluid>
-                <Button onClick={() => {this.handleChangeSearchCategory(0)}} active={searchCategory === 0}>Title</Button>
-                <Button onClick={() => {this.handleChangeSearchCategory(1)}} active={searchCategory === 1}>Current Program</Button>
-                <Button onClick={() => {this.handleChangeSearchCategory(2)}} active={searchCategory === 2}>Career Community</Button>
-              </Button.Group>
-              {isSearching && <div style={{paddingTop: 10}}><Button onClick={this.resetDocuments} size= "big" color="red" fluid>Clear Search Results</Button></div>}
-            </div>
+            <Button.Group size="big" color="yellow" fluid>
+              <Button onClick={() => {this.handleChangeSearchCategory(0)}} active={searchCategory === 0}>Title</Button>
+              <Button onClick={() => {this.handleChangeSearchCategory(1)}} active={searchCategory === 1}>Current Program</Button>
+              <Button onClick={() => {this.handleChangeSearchCategory(2)}} active={searchCategory === 2}>Career Community</Button>
+            </Button.Group>
+            {isSearching && <div style={{paddingTop: 10}}><Button onClick={this.resetDocuments} size= "big" color="red" fluid>Clear Search Results</Button></div>}
+          </div>
 
             <label>Search</label>
             <Input
